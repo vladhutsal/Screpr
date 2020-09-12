@@ -1,0 +1,13 @@
+{
+    "/home/rtdge/Pictures/": [
+        "jpg", "jpeg", "png"
+    ],
+ 
+    "/home/rtdge/Music/": [
+        "mp3", "acc"
+    ],
+
+    "/home/rtdge/Documents/": [
+        "txt", "doc"
+    ]
+}

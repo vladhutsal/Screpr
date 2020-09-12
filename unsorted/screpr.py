@@ -45,7 +45,7 @@ def copy_paster(path_list, format_dict):
                 copy_paste_counter += 1
 
     if copy_paste_counter > 0:
-        print('All done, bitch!')
+        print('All done!')
         copy_paste_counter = 0
     else:
         print('There are nothing in here')
