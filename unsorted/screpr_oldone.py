@@ -6,11 +6,13 @@ formats = ['pictures', 'music']
 pictures = ['jpg', 'jpeg']
 music = ['mp3', 'acc']
 
+
 def folder_runer(search_folder_path):
     files_to_move_dictionary = {
         'music': [],
         'pictures': []
     }
+
     def pathmaker(type):  # adding path of file to dictionary
         file_path = path + '/' + file
         files_to_move_dictionary[f'{type}'].append(file_path)
@@ -23,6 +25,7 @@ def folder_runer(search_folder_path):
             elif file_format in music:
                 pathmaker('music')
     return files_to_move_dictionary
+
 
 def copy_paster(file_path, destination):
     os.rename(file_path, destination)
@@ -38,11 +41,13 @@ def super_asker():
     username = input('Type your PC username: ')
     return [search_folder_path, username]
 
+
 def txt_creator(path, username):
     document = open('screpr_ways.txt', 'w+')
     document.write(f'{path}\n' + f'/home/{username}/Pictures/\n' + f'/home/{username}/Music/')
     document.close()
     print('Txt was created!')
+
 
 def run():
     try:
@@ -57,17 +62,16 @@ def run():
     pictures_folder = splited_doc[1]
     music_folder = splited_doc[2]
 
-    dictionary_of_file_pathes = folder_runer(search_folder_path)
+    dictionary_of_file_paths = folder_runer(search_folder_path)
+    
     for format in formats:
-        for file_path in dictionary_of_file_pathes[format]:
+        for file_path in dictionary_of_file_paths[format]:
             if format == 'pictures':
                 destination = pictures_folder + file_path.split('/')[-1]
                 copy_paster(file_path, destination)
             if format == 'music':
                 destination = music_folder + file_path.split('/')[-1]
                 copy_paster(file_path, destination)
-
-
 
 
 if __name__ == '__main__':
