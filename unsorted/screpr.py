@@ -45,7 +45,7 @@ def copy_paster(path_list, format_dict):
                 copy_paste_counter += 1
 
     if copy_paste_counter > 0:
-        print('All done, bitch!')
+        print('All done!')
         copy_paste_counter = 0
     else:
         print('There are nothing in here')
@@ -71,4 +71,4 @@ if __name__ == '__main__':
     
     format_types = format_dict.keys() 
     path_list = folder_runer(folder_to_sort_path)
-    copy_paster(path_list, format_dict)
+    copy_paster(path_list, format_types)

@@ -5,6 +5,22 @@ pictures = ['jpg', 'jpeg']
 music = ['mp3', 'acc']
 
 
+def super_asker(status):
+    if status == 'start':
+        answer = input('What you want to do?:\n'
+                       '(A)dd new formats\n'
+                       '(S)ort my files\n')
+        if answer == 'A':
+            super_adder()
+        elif answer == 'S':
+            pass
+        else:
+            print('Wrong answer')
+            super_asker('start')
+    elif status == 'add':
+        print('You already have:')
+
+
 def super_adder():
     super_asker('add')
 
@@ -32,22 +48,6 @@ def folder_runer(search_folder_path):
         for file in files:
             files_to_move_list.append(path + '/' + file)
     return files_to_move_list
-
-
-def super_asker(status):
-    if status == 'start':
-        answer = input('What you want to do?:\n'
-                       '(A)dd new formats\n'
-                       '(S)ort my files\n')
-        if answer == 'A':
-            super_adder()
-        elif answer == 'S':
-            pass
-        else:
-            print('Wrong answer')
-            super_asker('start')
-    elif status == 'add':
-        print('You already have:')
 
 
 def txt_builder(status):
