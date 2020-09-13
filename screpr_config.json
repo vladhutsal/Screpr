@@ -1,17 +1,17 @@
 {
-    "/home/rtdge/Pictures/": [
+    "/home/rtdge/Documents/vscode/kekpicz": [
         "jpg", "jpeg", "png"
     ],
  
-    "/home/rtdge/Music/": [
+    "/home/rtdge/Documents/vscode/kekmus": [
         "mp3", "acc"
     ],
 
-    "/home/rtdge/Documents/": [
-        "txt", "doc"
+    "/home/rtdge/Documents/vscode/kekdokz": [
+        "doc"
     ],
 
     "/home/rtdge/Documents/vscode/": [
-        "py", "json"
+        "--", "--"
     ]
-}
+} g
