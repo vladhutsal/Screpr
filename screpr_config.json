@@ -9,5 +9,9 @@
 
     "/home/rtdge/Documents/": [
         "txt", "doc"
+    ],
+
+    "/home/rtdge/Documents/vscode/": [
+        "py", "json"
     ]
 }
