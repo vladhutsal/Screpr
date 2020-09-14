@@ -1,0 +1,9 @@
+argparse +
+validate json via json-scheme
+create dirs
+re mode
+combine path lib
+tests
+what to do if file already exists
+safe mode for copying files, not transfer
+exceptions handling
