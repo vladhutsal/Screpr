@@ -22,7 +22,7 @@ def load_config(config_path) -> dict():
         validate_fail = json_validation(config_dict)
     if not validate_fail:
         format_to_path = dict()
-        check_folders(config_dict)
+        folder_exists(config_dict)
         for path, formats in config_dict.items():
             for frmt in formats:
                 format_to_path[frmt] = path
@@ -31,20 +31,25 @@ def load_config(config_path) -> dict():
         exception_handling(validate_fail)
 
 
-def check_folders(config_dict):
+def folder_exists(config_dict):
     for new_folder_path in config_dict.keys():
+        print(f'asking mysefl, is there is a dir? {os.path.isdir(new_folder_path)}\n')
         if os.path.isdir(new_folder_path) == False:
-             os.mkdir(new_folder_path)
+            print(f'making a folder named {new_folder_path}\n')
+            os.mkdir(new_folder_path)
 
 
-def walk(config_dict, sort_path):
+def walk(sort_path, config_dict):
     for path, _, files in os.walk(sort_path):
         for filename in files:
             file_format = filename.split('.')[-1]
             dest = need_to_move(config_dict, file_format)
             if dest:
                 src = f'{path}/{filename}'
-                do_the_move(src, f'{dest}/{filename}')
+                print(f'SRC: {src}\n')
+                dst = f'{dest}/{filename}'
+                print(f'DST: {dst}\n')
+                do_the_move(src, dst)
 
 
 def need_to_move(config_dict, file_format):
@@ -54,8 +59,10 @@ def need_to_move(config_dict, file_format):
 
 
 def do_the_move(src, dst):
-    print(f'{src} => {dst}')
-    # os.replace(src, dst)
+    # global res
+    # res = (f'{src} => {dst}')
+    # return res
+    os.replace(src, dst)
 
 
 def arg_parsing():
@@ -81,13 +88,18 @@ def exception_handling(excpt):
         return f'Something went wrong: {str(excpt)}'
 
 
-def main():
-    config_path, sort_path = arg_parsing()
+def handler(sort_path, config_path):
     try:
         config_dict = load_config(config_path)
-        walk(config_dict, sort_path)
+        walk(sort_path, config_dict)
+        print('all done')
     except Exception as excpt:
         print(exception_handling(excpt))
+
+
+def main():
+    config_path, sort_path = arg_parsing()
+    handler(sort_path, config_path)
 
 
 if __name__ == "__main__":
