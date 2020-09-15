@@ -14,75 +14,99 @@ import pprint
 # if it return 
 
 
-class TestOutput(unittest.TestCase):
-    def test_main_func(self):
-        pass
+def create_files(sort_tmpdir):
+    with open('screpr_config.json', 'r') as read_config:
+        config = json.load(read_config)
+    
+    formats = []
+    for values in config.values():
+        formats.extend(values)
+    files_list = []
+    for frmt in formats:
+        tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}', dir=sort_tmpdir,
+                                             delete=False)
+        file_name = tmp_file.name.split('/')[-1]
+        files_list.append(file_name)
+    return formats, files_list
 
 
-def generate_config_json():
-    pass
-
-
-def generate_files(config_dict, start_tmpdir):
-    format_list = list()
-    formats = config_dict.values()
-    for frmt_list in formats:
-        format_list.extend(frmt_list)
-
-    files_list = list()
-    for frmt in format_list:
-        filename = tempfile.NamedTemporaryFile(suffix=f'.{frmt}', dir=start_tmpdir,
-                                            delete=False)
-        files_list.append(filename.name)
-    return files_list
+def existence_check(files_list, src, dst):
+    for file_name in files_list:
+        src_check = os.path.exists(f'{src}/{file_name}')
+        dst_check = os.path.exists(f'{dst}/{file_name}')
+        if src_check == True or dst_check == False:
+            return False
+    return True
 
 
 def main():
-    config_path = "/home/rtdge/vscode/Screpr/screpr_config.json"
+    sort_tmpdir = tempfile.mkdtemp()
+    sorted_tmpdir = tempfile.mkdtemp()
+    print('SORT:', sort_tmpdir)
+    print('SORTED: ', sorted_tmpdir)
 
-    with open(config_path, 'r') as read_file:
-        config_dict = json.load(read_file)
-        config_name = 'screpr_config.json'
+    formats, files_list = create_files(sort_tmpdir)
+    config_dict = {}
+    for frmt in formats:
+        config_dict[frmt] = sorted_tmpdir
 
-    start_tmpdir = tempfile.mkdtemp()      # important
-    end_tmpdir = tempfile.mkdtemp()
+    screpr_new.walk(sort_tmpdir, config_dict)
 
-    files_list = generate_files(config_dict, start_tmpdir)
+    return existence_check(files_list, sort_tmpdir, sorted_tmpdir)
     
-    new_config = dict()     # important
-    for folder_path in config_dict.keys():
-        folder_name = folder_path.split('/')[-1]
-        new_folder_path = f'{end_tmpdir}/{folder_name}'
-        new_config[new_folder_path] = config_dict[folder_path]
 
-    new_config_path = f'{start_tmpdir}/{config_name}'
-    with open(new_config_path, 'w') as create_new_config:
-        json.dump(new_config, create_new_config)
-
-    with open(new_config_path, 'r') as conf:
-        config = json.load(conf)
-    print(f'START _DIR: {start_tmpdir} START _DIR\n')
-    print(f'END_DIR: {end_tmpdir} END_DIR\n')
-    pprint.pprint(f'NEW_CONFIG_IS: {config} NEW_CONFIG_IS\n')
-    print(f'CONFIG_PATH: {new_config_path} CONFIG_PATH\n')
-    screpr_new.handler(start_tmpdir, new_config_path)
-
-
+class TestBasic(unittest.TestCase):
+    def test_move(self):
+        res = main()
+        self.assertEqual(res, True)
 
 
 if __name__ == '__main__':
-    main()
+    unittest.main()
 
 
 
 
 
-    # os.rmdir(tmpdir)
-    # a = os.path.isdir(tmpdir)
-    # print(a)
 
-    
 
+
+
+
+
+
+
+# def generate_cfg_dict(end_tmpdir):
+#     config_path = '/home/rtdge/vscode/Screpr/screpr_config.json'
+#     new_config_name = f'{end_tmpdir}/{config_path.split("/")[-1]}'
+#     new_config_path = shutil.copyfile(config_path, new_config_name)
+
+#     with open(new_config_path, 'r') as old_config:
+#         config_dict = json.load(old_config)
+
+#     new_config = dict()                         # important
+#     for folder_path in config_dict.keys():
+#         folder_name = folder_path.split('/')[-1]
+#         new_folder_path = f'{end_tmpdir}/{folder_name}'
+#         new_config[new_folder_path] = config_dict[folder_path]
+
+#     with open(new_config_path, 'w') as config:
+#         json.dump(new_config, config)
         
-    
-    
+#     return new_config_path, new_config
+
+
+
+
+# def generate_files(config_dict, sort_tmpdir):
+#     format_list = []
+#     for frmt_list in config_dict.values():
+#         format_list.extend(frmt_list)
+
+#     files_list = list()
+#     for frmt in format_list:
+#         filename = tempfile.NamedTemporaryFile(suffix=f'.{frmt}', dir=sort_tmpdir,
+#                                             delete=False)
+#         files_list.append(filename.name)
+
+#     return files_list

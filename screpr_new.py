@@ -7,6 +7,24 @@ import jsonschema
 from pprint import pprint
 
 
+def conf_to_dict(config) -> dict():
+    config_dict = dict()
+    for path, formats in config.items():
+            for frmt in formats:
+                config_dict[frmt] = path
+    return config_dict
+
+
+def load_config(config_path):
+    with open(config_path, 'r') as read_file:
+        config = json.load(read_file)
+        validate_fail = json_validation(config)
+    if not validate_fail:
+        return config
+    else:
+        fails_handling(validate_fail)
+
+
 def json_validation(config_dict):
     validator = {
     "patternProperties": {
@@ -16,26 +34,11 @@ def json_validation(config_dict):
     return jsonschema.validate('config_dict', validator)
 
 
-def load_config(config_path) -> dict():
-    with open(config_path, 'r') as read_file:
-        config_dict = json.load(read_file)
-        validate_fail = json_validation(config_dict)
-    if not validate_fail:
-        format_to_path = dict()
-        folder_exists(config_dict)
-        for path, formats in config_dict.items():
-            for frmt in formats:
-                format_to_path[frmt] = path
-        return format_to_path
-    else:
-        exception_handling(validate_fail)
-
-
-def folder_exists(config_dict):
-    for new_folder_path in config_dict.keys():
-        print(f'asking mysefl, is there is a dir? {os.path.isdir(new_folder_path)}\n')
+def create_folders(config):
+    for new_folder_path in config.keys():
+        # print(f'asking mysefl, is there is a dir? {os.path.isdir(new_folder_path)}\n')
         if os.path.isdir(new_folder_path) == False:
-            print(f'making a folder named {new_folder_path}\n')
+            # print(f'making a folder named {new_folder_path}\n')
             os.mkdir(new_folder_path)
 
 
@@ -46,9 +49,9 @@ def walk(sort_path, config_dict):
             dest = need_to_move(config_dict, file_format)
             if dest:
                 src = f'{path}/{filename}'
-                print(f'SRC: {src}\n')
+                # print(f'SRC: {src}\n')
                 dst = f'{dest}/{filename}'
-                print(f'DST: {dst}\n')
+                # print(f'DST: {dst}\n')
                 do_the_move(src, dst)
 
 
@@ -83,23 +86,26 @@ def arg_parsing():
     return parser.parse_args().config, parser.parse_args().sp
 
 
-def exception_handling(excpt):
+def fails_handling(excpt):
     if excpt:
         return f'Something went wrong: {str(excpt)}'
 
 
-def handler(sort_path, config_path):
+def screpr(sort_path, config_dict):
     try:
-        config_dict = load_config(config_path)
         walk(sort_path, config_dict)
         print('all done')
     except Exception as excpt:
-        print(exception_handling(excpt))
+        print(fails_handling(excpt))
 
 
 def main():
     config_path, sort_path = arg_parsing()
-    handler(sort_path, config_path)
+    config = load_config(config_path)
+    config_dict = conf_to_dict(config)
+    create_folders(config)
+
+    screpr(sort_path, config_dict)
 
 
 if __name__ == "__main__":
