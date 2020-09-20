@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import os
 import json
 import argparse
@@ -8,9 +9,10 @@ import jsonschema
 
 def conf_to_dict(config) -> dict():
     config_dict = dict()
-    for path, formats in config.items():
-            for frmt in formats:
-                config_dict[frmt] = path
+    config.pop('mode')
+    for path, values in config.items():
+            for value in values:
+                config_dict[value] = path
     return config_dict
 
 
@@ -22,7 +24,6 @@ def load_config(config_path):
             raise Exception
         else:
             return config
-
 
 
 def json_validation(config_dict):
@@ -40,15 +41,25 @@ def create_folders(config):
             os.mkdir(new_folder_path)
 
 
-def move(working_dir, config_dict):
+def move(working_dir, config_dict, mode):
     for path, _, files in os.walk(working_dir):
         for filename in files:
-            file_format = filename.split('.')[-1]
-            dest = need_to_move(config_dict, file_format)
+            if mode == 'regex':
+                dest = need_to_move_regex(filename, config_dict)
+            elif mode == 'format-search':
+                file_format = filename.split('.')[-1]
+                dest = need_to_move(config_dict, file_format)
+            else:
+                raise Exception
             if dest:
-                src = f'{path}/{filename}'
-                dst = f'{dest}/{filename}'
-                do_the_move(src, dst)
+                do_the_move(path, dest, filename)
+
+
+def need_to_move_regex(filename, config_dict):
+    for key in config_dict.keys():
+        match = re.match(key, filename)
+        if match:
+            return config_dict[key]
 
 
 def need_to_move(config_dict, file_format):
@@ -57,8 +68,8 @@ def need_to_move(config_dict, file_format):
     return None
 
 
-def do_the_move(src, dst):
-    os.replace(src, dst)
+def do_the_move(path, dest, filename):
+    os.replace(f'{path}/{filename}', f'{dest}/{filename}')
 
 
 def arg_parsing():
@@ -69,7 +80,8 @@ def arg_parsing():
                 metavar='/home/Folder/',
                 type=str,
                 dest='path',
-                required=True
+                # required=True
+                default='/home/rtdge/Documents/vscode/TESTFOLDER'
             )
     parser.add_argument('-c', default=os.getcwd() + default_config_name,
                 help='Config path(default: current dir)',
@@ -81,11 +93,11 @@ def arg_parsing():
 
 
 def screpr(working_dir, config):
+    mode = config.get('mode')[0]
     config_dict = conf_to_dict(config)
     create_folders(config)
-    move(working_dir, config_dict)
+    move(working_dir, config_dict, mode)
     print('all done')
-
 
 
 def main():

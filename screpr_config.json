@@ -1,17 +1,13 @@
 {
+    "mode": [
+        "regex", "format-search"
+    ],
+
     "/home/rtdge/Documents/vscode/kekpicz": [
-        "jpg", "jpeg", "png"
+        "photo", "pic"
     ],
  
     "/home/rtdge/Documents/vscode/kekmus": [
-        "mp3", "acc"
-    ],
-
-    "/home/rtdge/Documents/vscode/kekdokz": [
-        "doc"
-    ],
-
-    "/home/rtdge/Documents/vscode/kruk": [
-        "txt", "kekpop"
+        "music", "audio"
     ]
 }
