@@ -44,7 +44,7 @@ class TestBasic(unittest.TestCase):
         shutil.rmtree(self.sort_tmpdir)
 
 
-    def test_move(self):
+    def test_screpr(self):
         screpr_new.screpr(self.sort_tmpdir, self.config)
         res = True
         for file_name in self.files_list:

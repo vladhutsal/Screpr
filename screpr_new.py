@@ -4,7 +4,6 @@ import os
 import json
 import argparse
 import jsonschema
-from pprint import pprint
 
 
 def conf_to_dict(config) -> dict():
@@ -18,11 +17,12 @@ def conf_to_dict(config) -> dict():
 def load_config(config_path):
     with open(config_path, 'r') as read_file:
         config = json.load(read_file)
-        validate_fail = json_validation(config)
-    if not validate_fail:
-        return config
-    else:
-        fails_handling(validate_fail)
+        validation_fail = json_validation(config)
+        if validation_fail:
+            raise Exception
+        else:
+            return config
+
 
 
 def json_validation(config_dict):
@@ -36,9 +36,7 @@ def json_validation(config_dict):
 
 def create_folders(config):
     for new_folder_path in config.keys():
-        # print(f'asking mysefl, is there is a dir? {os.path.isdir(new_folder_path)}\n')
         if os.path.isdir(new_folder_path) == False:
-            # print(f'making a folder named {new_folder_path}\n')
             os.mkdir(new_folder_path)
 
 
@@ -67,40 +65,36 @@ def arg_parsing():
     default_config_name = '/screpr_config.json'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', help='Folder to sort path',
+                metavar='/home/Folder/',
+                type=str,
+                dest='path',
+                required=True
+            )
     parser.add_argument('-c', default=os.getcwd() + default_config_name,
                 help='Config path(default: current dir)',
                 metavar='/home/cfg.json',
                 type=str,
                 dest='config'
             )
-    parser.add_argument('-sp', default=os.getcwd(), help='Sort folder path',
-                metavar='/home/Folder/',
-                type=str,
-                dest='sp'
-            )
-    return parser.parse_args().config, parser.parse_args().sp
-
-
-def fails_handling(excpt):
-    if excpt:
-        return f'Something went wrong: {str(excpt)}'
+    return parser.parse_args().path, parser.parse_args().config
 
 
 def screpr(working_dir, config):
-    try:
-        config_dict = conf_to_dict(config)
-        create_folders(config)
-        move(working_dir, config_dict)
-        print('all done')
-    except Exception as excpt:
-        print(fails_handling(excpt))
+    config_dict = conf_to_dict(config)
+    create_folders(config)
+    move(working_dir, config_dict)
+    print('all done')
+
 
 
 def main():
-    config_path, working_dir = arg_parsing()
-    config = load_config(config_path)
-
-    screpr(working_dir, config)
+    try:
+        working_dir, config_path = arg_parsing()
+        config = load_config(config_path)
+        screpr(working_dir, config)
+    except Exception as excpt:
+        print(f'Something went wrong: {excpt}')
 
 
 if __name__ == "__main__":
