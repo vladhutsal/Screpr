@@ -31,7 +31,7 @@ def json_validation(config_dict):
         ".+": {"type": "array"}
     }
 }
-    return jsonschema.validate('config_dict', validator)
+    return jsonschema.validate(config_dict, validator)
 
 
 def create_folders(config):
@@ -42,16 +42,14 @@ def create_folders(config):
             os.mkdir(new_folder_path)
 
 
-def walk(sort_path, config_dict):
-    for path, _, files in os.walk(sort_path):
+def move(working_dir, config_dict):
+    for path, _, files in os.walk(working_dir):
         for filename in files:
             file_format = filename.split('.')[-1]
             dest = need_to_move(config_dict, file_format)
             if dest:
                 src = f'{path}/{filename}'
-                # print(f'SRC: {src}\n')
                 dst = f'{dest}/{filename}'
-                # print(f'DST: {dst}\n')
                 do_the_move(src, dst)
 
 
@@ -62,9 +60,6 @@ def need_to_move(config_dict, file_format):
 
 
 def do_the_move(src, dst):
-    # global res
-    # res = (f'{src} => {dst}')
-    # return res
     os.replace(src, dst)
 
 
@@ -74,12 +69,12 @@ def arg_parsing():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', default=os.getcwd() + default_config_name,
                 help='Config path(default: current dir)',
-                metavar='/home/../cfg.json',
+                metavar='/home/cfg.json',
                 type=str,
                 dest='config'
             )
     parser.add_argument('-sp', default=os.getcwd(), help='Sort folder path',
-                metavar='/home/../Folder/',
+                metavar='/home/Folder/',
                 type=str,
                 dest='sp'
             )
@@ -91,21 +86,21 @@ def fails_handling(excpt):
         return f'Something went wrong: {str(excpt)}'
 
 
-def screpr(sort_path, config_dict):
+def screpr(working_dir, config):
     try:
-        walk(sort_path, config_dict)
+        config_dict = conf_to_dict(config)
+        create_folders(config)
+        move(working_dir, config_dict)
         print('all done')
     except Exception as excpt:
         print(fails_handling(excpt))
 
 
 def main():
-    config_path, sort_path = arg_parsing()
+    config_path, working_dir = arg_parsing()
     config = load_config(config_path)
-    config_dict = conf_to_dict(config)
-    create_folders(config)
 
-    screpr(sort_path, config_dict)
+    screpr(working_dir, config)
 
 
 if __name__ == "__main__":

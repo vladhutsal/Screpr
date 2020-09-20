@@ -6,64 +6,58 @@ import json
 import tempfile
 import screpr_new
 import shutil
-import pprint
 
 # json_schema validation:
 #   string: list
 # folder creation
-# if it return 
+# if it return z
 
-
-def create_files(sort_tmpdir):
-    with open('screpr_config.json', 'r') as read_config:
-        config = json.load(read_config)
-    
-    formats = []
-    for values in config.values():
-        formats.extend(values)
-    files_list = []
-    for frmt in formats:
-        tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}', dir=sort_tmpdir,
-                                             delete=False)
-        file_name = tmp_file.name.split('/')[-1]
-        files_list.append(file_name)
-    return formats, files_list
-
-
-def existence_check(files_list, src, dst):
-    for file_name in files_list:
-        src_check = os.path.exists(f'{src}/{file_name}')
-        dst_check = os.path.exists(f'{dst}/{file_name}')
-        if src_check == True or dst_check == False:
-            return False
-    return True
-
-
-def main():
-    sort_tmpdir = tempfile.mkdtemp()
-    sorted_tmpdir = tempfile.mkdtemp()
-    print('SORT:', sort_tmpdir)
-    print('SORTED: ', sorted_tmpdir)
-
-    formats, files_list = create_files(sort_tmpdir)
-    config_dict = {}
-    for frmt in formats:
-        config_dict[frmt] = sorted_tmpdir
-
-    screpr_new.walk(sort_tmpdir, config_dict)
-
-    return existence_check(files_list, sort_tmpdir, sorted_tmpdir)
-    
 
 class TestBasic(unittest.TestCase):
+    def setUp(self):
+        self.sort_tmpdir = tempfile.mkdtemp()
+        self.sorted_tmpdir = tempfile.mkdtemp()
+
+        print(self.sort_tmpdir, self.sorted_tmpdir)
+
+        with open('screpr_config.json', 'r') as read_config:
+            old_config = json.load(read_config)
+            
+            self.formats = []
+            for values in old_config.values():
+                self.formats.extend(values)
+
+            self.files_list = []
+            for frmt in self.formats:
+                tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}',
+                                                dir=self.sort_tmpdir,
+                                                delete=False)
+                file_name = tmp_file.name.split('/')[-1]
+                self.files_list.append(file_name)
+        
+        self.config = {
+            f'{self.sorted_tmpdir}/nested': self.formats
+        }
+
+    def tearDown(self):
+        shutil.rmtree(self.sorted_tmpdir)
+        shutil.rmtree(self.sort_tmpdir)
+
+
     def test_move(self):
-        res = main()
+        screpr_new.screpr(self.sort_tmpdir, self.config)
+        res = True
+        for file_name in self.files_list:
+            src_check = os.path.exists(f'{self.sort_tmpdir}/{file_name}')
+            dst_check = os.path.exists(f'{self.sorted_tmpdir}/nested/{file_name}')
+            if src_check == True or dst_check == False:
+                res = False
+
         self.assertEqual(res, True)
 
 
 if __name__ == '__main__':
     unittest.main()
-
 
 
 
