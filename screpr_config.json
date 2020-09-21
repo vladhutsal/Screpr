@@ -1,17 +1,13 @@
 {
-    "/home/rtdge/Documents/vscode/kekpicz": [
-        "jpg", "jpeg", "png"
+    "mode": [
+        "regex", "format-sort"
+    ],
+
+    "/home/rtdge/Documents/vscode/withdate": [
+        "\\b\\d{2}\\S\\d{2}\\S\\d{4}"
     ],
  
-    "/home/rtdge/Documents/vscode/kekmus": [
-        "mp3", "acc"
-    ],
-
-    "/home/rtdge/Documents/vscode/kekdokz": [
-        "doc"
-    ],
-
-    "/home/rtdge/Documents/vscode/kruk": [
-        "txt", "kekpop"
+    "/home/rtdge/Documents/vscode/music": [
+        "music", "audio"
     ]
 }

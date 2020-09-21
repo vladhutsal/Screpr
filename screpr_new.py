@@ -1,10 +1,29 @@
 #!/usr/bin/env python3
 
+import re
 import os
 import json
 import argparse
 import jsonschema
-from pprint import pprint
+
+
+def conf_to_dict(config) -> dict():
+    config_dict = dict()
+    config.pop('mode')
+    for path, values in config.items():
+            for value in values:
+                config_dict[value] = path
+    return config_dict
+
+
+def load_config(config_path):
+    with open(config_path, 'r') as read_file:
+        config = json.load(read_file)
+        validation_fail = json_validation(config)
+        if validation_fail:
+            raise Exception
+        else:
+            return config
 
 
 def json_validation(config_dict):
@@ -13,93 +32,81 @@ def json_validation(config_dict):
         ".+": {"type": "array"}
     }
 }
-    return jsonschema.validate('config_dict', validator)
+    return jsonschema.validate(config_dict, validator)
 
 
-def load_config(config_path) -> dict():
-    with open(config_path, 'r') as read_file:
-        config_dict = json.load(read_file)
-        validate_fail = json_validation(config_dict)
-    if not validate_fail:
-        format_to_path = dict()
-        folder_exists(config_dict)
-        for path, formats in config_dict.items():
-            for frmt in formats:
-                format_to_path[frmt] = path
-        return format_to_path
-    else:
-        exception_handling(validate_fail)
-
-
-def folder_exists(config_dict):
-    for new_folder_path in config_dict.keys():
-        print(f'asking mysefl, is there is a dir? {os.path.isdir(new_folder_path)}\n')
+def create_folders(config):
+    for new_folder_path in config.keys():
         if os.path.isdir(new_folder_path) == False:
-            print(f'making a folder named {new_folder_path}\n')
             os.mkdir(new_folder_path)
 
 
-def walk(sort_path, config_dict):
-    for path, _, files in os.walk(sort_path):
+def walk_trhough_files(working_dir, config_dict, mode):
+    for path, _, files in os.walk(working_dir):
         for filename in files:
-            file_format = filename.split('.')[-1]
-            dest = need_to_move(config_dict, file_format)
+            if mode == 'regex':
+                dest = need_to_move_regex(filename, config_dict)
+            elif mode == 'format-sort':
+                file_format = filename.split('.')[-1]
+                dest = need_to_move_format(config_dict, file_format)
+            else:
+                raise Exception
             if dest:
-                src = f'{path}/{filename}'
-                print(f'SRC: {src}\n')
-                dst = f'{dest}/{filename}'
-                print(f'DST: {dst}\n')
-                do_the_move(src, dst)
+                do_the_move(path, dest, filename)
 
 
-def need_to_move(config_dict, file_format):
+def need_to_move_regex(filename, config_dict):
+    for key in config_dict.keys():
+        match = re.search(key, filename)
+        if match:
+            return config_dict[key]
+
+
+def need_to_move_format(config_dict, file_format):
     if file_format in config_dict.keys():
         return config_dict[file_format]
     return None
 
 
-def do_the_move(src, dst):
-    # global res
-    # res = (f'{src} => {dst}')
-    # return res
-    os.replace(src, dst)
+def do_the_move(path, dest, filename):
+    os.replace(f'{path}/{filename}', f'{dest}/{filename}')
 
 
 def arg_parsing():
     default_config_name = '/screpr_config.json'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', help='Folder to sort path',
+                metavar='/home/Folder/',
+                type=str,
+                dest='path',
+                # required=True
+                default='/home/rtdge/Documents/vscode/TESTFOLDER'
+            )
     parser.add_argument('-c', default=os.getcwd() + default_config_name,
                 help='Config path(default: current dir)',
-                metavar='/home/../cfg.json',
+                metavar='/home/cfg.json',
                 type=str,
                 dest='config'
             )
-    parser.add_argument('-sp', default=os.getcwd(), help='Sort folder path',
-                metavar='/home/../Folder/',
-                type=str,
-                dest='sp'
-            )
-    return parser.parse_args().config, parser.parse_args().sp
+    return parser.parse_args().path, parser.parse_args().config
 
 
-def exception_handling(excpt):
-    if excpt:
-        return f'Something went wrong: {str(excpt)}'
-
-
-def handler(sort_path, config_path):
-    try:
-        config_dict = load_config(config_path)
-        walk(sort_path, config_dict)
-        print('all done')
-    except Exception as excpt:
-        print(exception_handling(excpt))
+def screpr(working_dir, config):
+    mode = config.get('mode')[0]
+    config_dict = conf_to_dict(config)
+    create_folders(config)
+    walk_trhough_files(working_dir, config_dict, mode)
+    print('all done')
 
 
 def main():
-    config_path, sort_path = arg_parsing()
-    handler(sort_path, config_path)
+    try:
+        working_dir, config_path = arg_parsing()
+        config = load_config(config_path)
+        screpr(working_dir, config)
+    except Exception as excpt:
+        print(f'Something went wrong: {excpt}')
 
 
 if __name__ == "__main__":
