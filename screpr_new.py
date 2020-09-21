@@ -41,14 +41,14 @@ def create_folders(config):
             os.mkdir(new_folder_path)
 
 
-def move(working_dir, config_dict, mode):
+def walk_trhough_files(working_dir, config_dict, mode):
     for path, _, files in os.walk(working_dir):
         for filename in files:
             if mode == 'regex':
                 dest = need_to_move_regex(filename, config_dict)
-            elif mode == 'format-search':
+            elif mode == 'format-sort':
                 file_format = filename.split('.')[-1]
-                dest = need_to_move(config_dict, file_format)
+                dest = need_to_move_format(config_dict, file_format)
             else:
                 raise Exception
             if dest:
@@ -57,12 +57,12 @@ def move(working_dir, config_dict, mode):
 
 def need_to_move_regex(filename, config_dict):
     for key in config_dict.keys():
-        match = re.match(key, filename)
+        match = re.search(key, filename)
         if match:
             return config_dict[key]
 
 
-def need_to_move(config_dict, file_format):
+def need_to_move_format(config_dict, file_format):
     if file_format in config_dict.keys():
         return config_dict[file_format]
     return None
@@ -96,7 +96,7 @@ def screpr(working_dir, config):
     mode = config.get('mode')[0]
     config_dict = conf_to_dict(config)
     create_folders(config)
-    move(working_dir, config_dict, mode)
+    walk_trhough_files(working_dir, config_dict, mode)
     print('all done')
 
 

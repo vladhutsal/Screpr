@@ -1,11 +1,17 @@
 argparse +
 validate json via json-scheme +
 create dirs +
-re mode
+re mode +
+tests +
+more tests
 combine path lib
-tests
 
-what to do if file already exists
+
+what to do if file already exists in the folder
+what to do if file belongs to two or more keys in config dict
 safe mode for copying files, not transfer
 exceptions handling
 delete empty folders
+
+structure project folder
+   
