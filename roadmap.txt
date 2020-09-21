@@ -8,7 +8,7 @@ combine path lib
 
 
 what to do if file already exists in the folder
-what to do if file belongs to two or more keys in config dict
+what to do if file belongs to two or more keys in config dict +
 safe mode for copying files, not transfer
 exceptions handling
 delete empty folders

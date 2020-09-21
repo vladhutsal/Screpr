@@ -43,6 +43,8 @@ def create_folders(config):
 
 def walk_trhough_files(working_dir, config_dict, mode):
     for path, _, files in os.walk(working_dir):
+        if not files:
+            raise Exception('Work folder is empty')
         for filename in files:
             if mode == 'regex':
                 dest = need_to_move_regex(filename, config_dict)
@@ -50,7 +52,7 @@ def walk_trhough_files(working_dir, config_dict, mode):
                 file_format = filename.split('.')[-1]
                 dest = need_to_move_format(config_dict, file_format)
             else:
-                raise Exception
+                raise Exception('Wrong config mode')
             if dest:
                 do_the_move(path, dest, filename)
 
@@ -76,19 +78,19 @@ def arg_parsing():
     default_config_name = '/screpr_config.json'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', help='Folder to sort path',
+    parser.add_argument('path', help='Folder to sort path',
                 metavar='/home/Folder/',
                 type=str,
                 dest='path',
                 # required=True
-                default='/home/rtdge/Documents/vscode/TESTFOLDER'
-            )
-    parser.add_argument('-c', default=os.getcwd() + default_config_name,
+                default='/home/rtdge/Documents/vscode/TESTFOLDER')
+
+    parser.add_argument('-conf', default=os.getcwd() + default_config_name,
                 help='Config path(default: current dir)',
                 metavar='/home/cfg.json',
                 type=str,
-                dest='config'
-            )
+                dest='config')
+
     return parser.parse_args().path, parser.parse_args().config
 
 

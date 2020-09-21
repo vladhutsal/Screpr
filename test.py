@@ -22,12 +22,12 @@ class MoveFunc(unittest.TestCase):
 
         with open('screpr_config.json', 'r') as read_config:
             old_config = json.load(read_config)
-# List of config values 
+
             old_config.pop('mode')
             self.values = []
             for value in old_config.values():
                 self.values.extend(value)
-# Creating temporary files for formats
+
             self.files_list = []
             for frmt in self.values:
                 tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}',
@@ -35,7 +35,7 @@ class MoveFunc(unittest.TestCase):
                                                 delete=False)
                 file_name = tmp_file.name.split('/')[-1]
                 self.files_list.append(file_name)
-# Creating config
+
         self.config = {
             f'{self.sorted_tmpdir}/nested': self.values,
             'mode': []}
