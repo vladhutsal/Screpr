@@ -11,8 +11,8 @@ def conf_to_dict(config) -> dict():
     config_dict = dict()
     config.pop('mode')
     for path, values in config.items():
-            for value in values:
-                config_dict[value] = path
+        for value in values:
+            config_dict[value] = path
     return config_dict
 
 
@@ -28,16 +28,16 @@ def load_config(config_path):
 
 def json_validation(config_dict):
     validator = {
-    "patternProperties": {
-        ".+": {"type": "array"}
+        "patternProperties": {
+            ".+": {"type": "array"}
+        }
     }
-}
     return jsonschema.validate(config_dict, validator)
 
 
 def create_folders(config):
     for new_folder_path in config.keys():
-        if os.path.isdir(new_folder_path) == False:
+        if not os.path.isdir(new_folder_path):
             os.mkdir(new_folder_path)
 
 
@@ -79,17 +79,17 @@ def arg_parsing():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('path', help='Folder to sort path',
-                metavar='/home/Folder/',
-                type=str,
-                dest='path',
-                # required=True
-                default='/home/rtdge/Documents/vscode/TESTFOLDER')
+                        metavar='/home/Folder/',
+                        type=str,
+                        dest='path',
+                        # required=True
+                        default='/home/rtdge/Documents/vscode/TESTFOLDER')
 
     parser.add_argument('-conf', default=os.getcwd() + default_config_name,
-                help='Config path(default: current dir)',
-                metavar='/home/cfg.json',
-                type=str,
-                dest='config')
+                        help='Config path(default: current dir)',
+                        metavar='/home/cfg.json',
+                        type=str,
+                        dest='config')
 
     return parser.parse_args().path, parser.parse_args().config
 
