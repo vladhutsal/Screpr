@@ -9,6 +9,7 @@ class Screpr:
         self.cfg = cfg
         self.path = path
         self.mode = None
+        self.move_dict = {}
 
     def cfg_to_dict(self, cfg) -> dict():
         cfg_dict = dict()
@@ -44,13 +45,17 @@ class Screpr:
         for path, _, files in os.walk(working_dir):
             if not files:
                 raise Exception(f'There is no files in {path} folder')
-            
-            for filename in files:
-                dest = self.need_to_move_regex(filename, cfg_dict)
-                if dest:
-                    pass
 
-    def need_to_move_regex(self, filename, cfg_dict):
+            for filename in files:
+                curr_file_path = os.path.join(path, filename)
+                file_dest = self.need_to_move(filename, cfg_dict)
+
+                if file_dest in self.move_dict:
+                    self.move_dict[file_dest].append(curr_file_path)
+                else:
+                    self.move_dict[file_dest] = [curr_file_path]
+
+    def need_to_move(self, filename, cfg_dict):
         for key in cfg_dict.keys():
             match = re.search(key, filename)
             if match:

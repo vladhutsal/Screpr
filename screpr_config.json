@@ -1,17 +1,17 @@
 {
     "/home/rtdge/vscode/Screpr/ENDFOLDER/video": [
-        ".avi"
+        "\\w+.avi(\\b|$)"
     ],
  
     "/home/rtdge/vscode/Screpr/ENDFOLDER/music": [
-        ".mp3"
+        "\\w+.mp3(\\b|$)"
     ],
 
     "/home/rtdge/vscode/Screpr/ENDFOLDER/docs": [
-        ".doc"
+        "\\w+.doc(\\b|$)"
     ],
 
     "/home/rtdge/vscode/Screpr/ENDFOLDER/pics": [
-        ".jpg", ".jpeg", ".png"
+        "\\w+.jpg(\\b|$)", "\\w+.jpeg(\\b|$)", "\\w+.png(\\b|$)"
     ]
 }

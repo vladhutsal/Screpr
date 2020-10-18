@@ -3,6 +3,7 @@
 from Screpr import Screpr
 import os
 import tempfile
+import re
 
 path = os.path.join(os.getcwd() + '/SORTFOLDER')
 config_path = ('screpr_config.json')
@@ -32,17 +33,9 @@ def debuger(*args):
 if __name__ == "__main__":
     cfg = screpr.load_cfg(config_path)
     cfg_dict = screpr.cfg_to_dict(cfg)
+    move_dict = screpr.get_files_list(path, cfg_dict)
+    print(screpr.move_dict)
 
-    file_list = []
-    for path, _, files in os.walk(path):
-        cur_dir_file_list = [os.path.join(path, file_path) for file_path in files]
-        file_list.extend(cur_dir_file_list)
-
-    print(file_list)
-
-        # screpr.need_to_move_regex()
-        # file_list = (file for file in files)
-        # print(next(file_list))
 
     debuger(cfg, cfg_dict)
 

@@ -11,3 +11,7 @@ allow to use config: path-like, dict-like, file-like
     - safe mode for copying files, without transfer
     - default mode without regex (or without config file?) only file formate
 
+- log
+- json
+    - validate regex
+
