@@ -1,13 +1,17 @@
 {
-    "mode": [
-        "regex", "format-sort"
-    ],
-
-    "/home/rtdge/Documents/vscode/withdate": [
-        "photo"
+    "/home/rtdge/vscode/Screpr/ENDFOLDER/video": [
+        ".avi"
     ],
  
-    "/home/rtdge/Documents/vscode/music": [
-        "music", "audio"
+    "/home/rtdge/vscode/Screpr/ENDFOLDER/music": [
+        ".mp3"
+    ],
+
+    "/home/rtdge/vscode/Screpr/ENDFOLDER/docs": [
+        ".doc"
+    ],
+
+    "/home/rtdge/vscode/Screpr/ENDFOLDER/pics": [
+        ".jpg", ".jpeg", ".png"
     ]
 }

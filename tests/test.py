@@ -4,7 +4,7 @@ import unittest
 import os
 import json
 import tempfile
-import screpr_new
+import screpr
 import shutil
 
 # json_schema validation:
@@ -18,57 +18,48 @@ class MoveFunc(unittest.TestCase):
         self.sort_tmpdir = tempfile.mkdtemp()
         self.sorted_tmpdir = tempfile.mkdtemp()
 
-        print(f'User folder to sort: {self.sort_tmpdir},\nCreated Folder with sorted files: {self.sorted_tmpdir}')
+        print(f'User folder to sort: {self.sort_tmpdir},\n\
+              Created Folder with sorted files: {self.sorted_tmpdir}')
 
-        with open('screpr_config.json', 'r') as read_config:
-            old_config = json.load(read_config)
-
-            old_config.pop('mode')
-            self.values = []
-            for value in old_config.values():
-                self.values.extend(value)
-
-            self.files_list = []
-            for frmt in self.values:
-                tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}',
-                                                dir=self.sort_tmpdir,
-                                                delete=False)
-                file_name = tmp_file.name.split('/')[-1]
-                self.files_list.append(file_name)
+        self.files_list = []
+        for frmt in range(6):
+            tmp_file = tempfile.NamedTemporaryFile(suffix=f'.{frmt}',
+                                                   dir=self.sort_tmpdir,
+                                                   delete=False)
+            file_name = tmp_file.name.split('/')[-1]
+            self.files_list.append(file_name)
 
         self.config = {
-            f'{self.sorted_tmpdir}/nested': self.values,
-            'mode': []}
+            f'{self.sorted_tmpdir}/nested': self.files_list}
         
+        print(self.config)
 
     def tearDown(self):
         shutil.rmtree(self.sorted_tmpdir)
         shutil.rmtree(self.sort_tmpdir)
         print('Test folders deleted')
 
-
     def test_screpr_format(self):
-        self.config['mode'].append('format-sort')
-        screpr_new.screpr(self.sort_tmpdir, self.config)
+        self.config['mode'] = ['format-sort']
+        screpr.screpr(self.sort_tmpdir, self.config)
         res = True
         for file_name in self.files_list:
             src_check = os.path.exists(f'{self.sort_tmpdir}/{file_name}')
             dst_check = os.path.exists(f'{self.sorted_tmpdir}/nested/{file_name}')
-            if src_check == True or dst_check == False:
+            if src_check or not dst_check:
                 res = False
 
         self.assertEqual(res, True)
 
-
     def test_screpr_regex(self):
-        self.config['mode'].append('regex')
+        self.config['mode'] = ['regex']
         print('CONF: ', self.config)
-        screpr_new.screpr(self.sort_tmpdir, self.config)
+        screpr.screpr(self.sort_tmpdir, self.config)
         res = True
         for file_name in self.files_list:
             src_check = os.path.exists(f'{self.sort_tmpdir}/{file_name}')
             dst_check = os.path.exists(f'{self.sorted_tmpdir}/nested/{file_name}')
-            if src_check == True or dst_check == False:
+            if src_check or not dst_check:
                 res = False
 
         self.assertEqual(res, True)
