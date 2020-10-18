@@ -15,3 +15,5 @@ allow to use config: path-like, dict-like, file-like
 - json
     - validate regex
 
+shutil and os versions?
+

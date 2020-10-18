@@ -2,84 +2,83 @@ import re
 import os
 import json
 import jsonschema
+import shutil
 
 
 class Screpr:
-    def __init__(self, path, cfg):
-        self.cfg = cfg
-        self.path = path
+    def __init__(self, path, cfg, *args, **kwargs):
+        self.work_dir_path = path
+        self.cfg_path = cfg
+
+        self.cfg_dict = {}
+        self.cfg = None
         self.mode = None
-        self.move_dict = {}
+        self.file_name = None
+        self.curr_dir = None
+        self.dest_dir = None
 
-    def cfg_to_dict(self, cfg) -> dict():
-        cfg_dict = dict()
-        for path, values in cfg.items():
+    def cfg_to_dict(self):
+        for path, values in self.cfg.items():
             for value in values:
-                cfg_dict[value] = path
-        return cfg_dict
+                self.cfg_dict[value] = path
 
-    def load_cfg(self, cfg_path):
-        with open(cfg_path, 'r') as read_file:
-            cfg = json.load(read_file)
-            validation_fail = self.json_validation(cfg)
-            if validation_fail:
+# ============= Am I loading cfg?
+    def load_cfg(self):
+        with open(self.cfg_path, 'r') as read_file:
+            self.cfg = json.load(read_file)
+
 # ============= add validation error exception of jsonschema
-                raise Exception
-            else:
-                return cfg
 
-    def json_validation(self, cfg_dict):
+# ============= validate user config
+    def json_validation(self):
         validator = {
             "patternProperties": {
                 ".+": {"type": "array"}
             }
         }
-        return jsonschema.validate(cfg_dict, validator)
+        return jsonschema.validate(self.cfg_dict, validator)
 
-    def create_folders(cfg):
-        for new_folder_path in cfg.keys():
-            if not os.path.isdir(new_folder_path):
-                os.mkdir(new_folder_path)
+    def check_folder(self):
+        if not os.path.isdir(self.dest_dir):
+            os.mkdir(self.dest_dir)
 
-    def get_files_list(self, working_dir, cfg_dict):
-        for path, _, files in os.walk(working_dir):
+    def walk_through_folders(self):
+        for path, _, files in os.walk(self.work_dir_path):
             if not files:
                 raise Exception(f'There is no files in {path} folder')
 
             for filename in files:
-                curr_file_path = os.path.join(path, filename)
-                file_dest = self.need_to_move(filename, cfg_dict)
+                self.file_name = filename
+                self.curr_dir = path
+                self.dest_dir = self.need_to_move()
 
-                if file_dest in self.move_dict:
-                    self.move_dict[file_dest].append(curr_file_path)
-                else:
-                    self.move_dict[file_dest] = [curr_file_path]
+                if self.dest_dir:
+                    self.check_folder()
+                    self.do_the_move()
 
-    def need_to_move(self, filename, cfg_dict):
-        for key in cfg_dict.keys():
-            match = re.search(key, filename)
+    def need_to_move(self):
+        for key in self.cfg_dict.keys():
+            match = re.search(key, self.file_name)
             if match:
-                return cfg_dict[key]
+                return self.cfg_dict[key]
 
-# ============= TODO:
-    def need_to_move_format(cfg_dict, file_format):
-        if file_format in cfg_dict.keys():
-            return cfg_dict[file_format]
-        return None
+    def do_the_move(self):
+        if not self.mode or self.mode == 'move':
+            os.replace(
+                f'{self.curr_dir}/{self.file_name}',
+                f'{self.dest_dir}/{self.file_name}'
+            )
 
-    def do_the_move(self, path, dest, filename):
-        os.replace(f'{path}/{filename}', f'{dest}/{filename}')
+        if self.mode == 'safe':
+            shutil.copyfile(
+                f'{self.curr_dir}/{self.file_name}',
+                f'{self.dest_dir}/{self.file_name}'
+            )
 
-    def screpr(self, working_dir, cfg):
-        cfg_dict = self.conf_to_dict(cfg)
-        self.create_folders(cfg)
-        self.get_files_list(working_dir, cfg_dict)
-        print('all done')
 
-    def move(self):
-        try:
-            working_dir, cfg_path = self.path, self.cfg
-            cfg = self.load_cfg(cfg_path)
-            self.screpr(working_dir, cfg)
-        except Exception as excpt:
-            print(f'Something went wrong: {excpt}')
+def safe(path, config):
+    screpr = Screpr(path, config, mode='safe')
+    screpr.load_cfg()
+    screpr.cfg_to_dict()
+    screpr.walk_through_folders()
+    return 'done'
