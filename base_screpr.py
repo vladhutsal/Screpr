@@ -9,8 +9,8 @@ import jsonschema
 
 
 class Screpr:
-    def __init__(self, workdir_path, cfg_path, mode, log):
-        self.work_dir_path = workdir_path
+    def __init__(self, work_dir_path, cfg_path, mode, log):
+        self.work_dir_path = work_dir_path
         self.cfg_path = cfg_path
         self.mode = mode
         self.log = log
@@ -29,9 +29,9 @@ class Screpr:
 
     def user_cfg_to_dict(self):
         screpr_cfg = {}
-        for path, values in self.user_cfg.items():
-            for value in values:
-                screpr_cfg[value] = path
+        for path, user_regexs in self.user_cfg.items():
+            for regex in user_regexs:
+                screpr_cfg[regex] = path
 
         return screpr_cfg
 
@@ -80,29 +80,53 @@ def do_the_job(mode, folder_path, dest, filename):
 
 
 def arg_parsing():
-    default_config_name = '/screpr_config.json'
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', help='Folder to sort path',
-                        metavar='/home/Folder/',
+    parser.add_argument('path',
+                        help='Path to work folder',
+                        metavar='FOLDER_PATH',
                         type=str,
-                        dest='path',
-                        # required=True
                         default='/home/rtdge/Documents/vscode/TESTFOLDER')
 
-    parser.add_argument('-conf', default=os.getcwd() + default_config_name,
-                        help='Config path(default: current dir)',
-                        metavar='/home/cfg.json',
+    parser.add_argument('config',
+                        help='Path to *.json config file',
+                        metavar='CONFIG_PATH',
                         type=str,
-                        dest='config')
+                        default='screpr_config.json')
+    
+    parser.add_argument('-s',
+                        metavar='Safe mode, copying files',
+                        help=argparse.SUPPRESS,
+                        action='append',
+                        nargs='?',
+                        dest='mode',
+                        const='safe',
+                        required=False)
+    
+    parser.add_argument('-l',
+                        metavar='[Log execution]',
+                        help=argparse.SUPPRESS,
+                        action='append',
+                        dest='log',
+                        nargs='?',
+                        const=True,
+                        required=False)
 
-    return parser.parse_args().path, parser.parse_args().config
+    return parser.parse_args()
 
 
-def screpr(working_dir, config_path, *args, **kwargs):
+def screpr(work_dir, config_path, *args, **kwargs):
     mode = kwargs.get('mode') or None
     log = kwargs.get('log') or False
-    screpr = Screpr(working_dir, config_path, mode, log)
+    screpr = Screpr(work_dir, config_path, mode, log)
     check_folders(screpr.user_cfg)
     walk_trhough_files(screpr)
-    return 'done?'
+    return 'done'
+
+
+if __name__ == "__main__":
+    output = vars(arg_parsing())
+    mode = output.get('mode')
+    log = output.get('log')
+    src = output.get('path')
+    cfg = output.get('config')
+    print(src, cfg, mode, log)
