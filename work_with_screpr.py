@@ -28,5 +28,5 @@ def debuger(*args):
 if __name__ == "__main__":
     path = os.path.join(os.getcwd() + '/SORTFOLDER')
     config_path = ('screpr_config.json')
-    result = base_screpr.screpr(path, config_path, mode='safe')
+    result = base_screpr.screpr(path, config_path, mode='safe', clean=True)
     print(result)

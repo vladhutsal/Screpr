@@ -3,45 +3,9 @@
 import re
 import os
 import shutil
-import json
-import argparse
-import jsonschema
 
-
-class Screpr:
-    def __init__(self, work_dir_path, cfg_path, mode, log):
-        self.work_dir_path = work_dir_path
-        self.cfg_path = cfg_path
-        self.mode = mode
-        self.log = log
-
-        self.user_cfg = self.load_cfg()
-        self.screpr_cfg = self.user_cfg_to_dict()
-
-    def load_cfg(self):
-        with open(self.cfg_path, 'r') as read_file:
-            config = json.load(read_file)
-            validation_fail = self.json_validation(config)
-            if validation_fail:
-                raise Exception
-
-            return config
-
-    def user_cfg_to_dict(self):
-        screpr_cfg = {}
-        for path, user_regexs in self.user_cfg.items():
-            for regex in user_regexs:
-                screpr_cfg[regex] = path
-
-        return screpr_cfg
-
-    def json_validation(self, config):
-        validator = {
-            "patternProperties": {
-                ".+": {"type": "array"}
-            }
-        }
-        return jsonschema.validate(config, validator)
+from Screpr import Screpr
+from commandline_mode import arg_parsing
 
 
 def check_folders(config):
@@ -51,14 +15,17 @@ def check_folders(config):
 
 
 def walk_trhough_files(screpr):
-    for folder_path, _, files in os.walk(screpr.work_dir_path):
+    for src_folder, _, files in os.walk(screpr.work_dir_path):
         if not files:
             raise Exception('Work folder is empty')
 
         for filename in files:
-            dest = need_to_move(filename, screpr.screpr_cfg)
-            if dest:
-                do_the_job(screpr.mode, folder_path, dest, filename)
+            dst_folder = need_to_move(filename, screpr.screpr_cfg)
+            if dst_folder:
+                do_the_job(screpr,
+                           src_folder,
+                           dst_folder,
+                           filename)
 
 
 def need_to_move(filename, screpr_cfg):
@@ -69,57 +36,37 @@ def need_to_move(filename, screpr_cfg):
 
 
 # function to copy or move files
-def do_the_job(mode, folder_path, dest, filename):
-    src = f'{folder_path}/{filename}'
-    dst = f'{dest}/{filename}'
+def do_the_job(screpr, src_folder, dst_folder, filename):
+    mode = screpr.mode
+    src = f'{src_folder}/{filename}'
+    dst = f'{dst_folder}/{filename}'
 
     if mode == 'safe':
         shutil.copyfile(src, dst)
-    elif not mode or mode == 'move':
+    elif mode == 'move':
         shutil.move(src, dst)
 
 
-def arg_parsing():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('path',
-                        help='Path to work folder',
-                        metavar='FOLDER_PATH',
-                        type=str,
-                        default='/home/rtdge/Documents/vscode/TESTFOLDER')
+def clean_after_move(screpr):
+    nonempty_folders = []
+    for src_folder, _, _ in os.walk(screpr.work_dir_path):
+        try:
+            os.rmdir(src_folder)
+        except OSError:
+            nonempty_folders.append(f'{src_folder}\n')
 
-    parser.add_argument('config',
-                        help='Path to *.json config file',
-                        metavar='CONFIG_PATH',
-                        type=str,
-                        default='screpr_config.json')
-    
-    parser.add_argument('-s',
-                        metavar='Safe mode, copying files',
-                        help=argparse.SUPPRESS,
-                        action='append',
-                        nargs='?',
-                        dest='mode',
-                        const='safe',
-                        required=False)
-    
-    parser.add_argument('-l',
-                        metavar='[Log execution]',
-                        help=argparse.SUPPRESS,
-                        action='append',
-                        dest='log',
-                        nargs='?',
-                        const=True,
-                        required=False)
-
-    return parser.parse_args()
+    if nonempty_folders:
+        print('There was attempt to delete not empty folders. Didn`t delete:')
+    elif not nonempty_folders:
+        print('Working dir is clean')
 
 
 def screpr(work_dir, config_path, *args, **kwargs):
-    mode = kwargs.get('mode') or None
-    log = kwargs.get('log') or False
-    screpr = Screpr(work_dir, config_path, mode, log)
+    screpr = Screpr(work_dir, config_path, *args, **kwargs)
     check_folders(screpr.user_cfg)
     walk_trhough_files(screpr)
+    if screpr.clean:
+        clean_after_move(screpr)
     return 'done'
 
 
